@@ -12,6 +12,14 @@ let sortModule = (function () {
             });
             return players;
         };
+
+        let _getWinner = function (game, player1, player2) {
+            const pl1Score = game.score[0][0];
+            const pl2Score = game.score[0][2];
+            if (pl1Score > pl2Score) return game.player_1.user1_id;
+            if (pl2Score > pl1Score) return game.player_2.user2_id;
+            if (pl2Score === pl1Score) return null;
+        };
         // Sort by games function
         let _sortByGames = function (data, parameters, checkSum) {
 
@@ -26,7 +34,8 @@ let sortModule = (function () {
             filteredData.forEach((game) => {
                 let firstId = game.player_1.user1_id;
                 let secondId = game.player_2.user2_id;
-                let winnerId = game.winner.winner_id;
+                let winnerId = _getWinner(game, firstId, secondId);
+                console.log(firstId, secondId, winnerId)
 
                 if (!innerScore[firstId]) {
                     innerScore[firstId] = 0;
@@ -37,11 +46,11 @@ let sortModule = (function () {
                 if (firstId === winnerId) {
                     innerScore[firstId] += 2;
                     innerScore[secondId] += 1;
-                } else {
+                }
+                if (secondId === winnerId) {
                     innerScore[firstId] += 1;
                     innerScore[secondId] += 2;
                 }
-                console.log(firstId, secondId, innerScore[firstId], innerScore[secondId], innerScore);
             });
 
             let tempResult = Object.entries(innerScore).sort((a, b) => b[1] - a[1]);
