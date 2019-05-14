@@ -13,12 +13,12 @@ let sortModule = (function () {
             return players;
         };
 
-        let _getWinner = function (game, player1, player2) {
+        let _getWinner = function (game) {
             const pl1Score = game.score[0][0];
             const pl2Score = game.score[0][2];
-            if (pl1Score > pl2Score) return game.player_1.user1_id;
-            if (pl2Score > pl1Score) return game.player_2.user2_id;
-            if (pl2Score === pl1Score) return null;
+            if (pl1Score > pl2Score) return game.player_1.user1_id
+                else if (pl2Score > pl1Score) return game.player_2.user2_id;
+                    else return 0;
         };
         // Sort by games function
         let _sortByGames = function (data, parameters, checkSum) {
@@ -30,12 +30,11 @@ let sortModule = (function () {
                 let secondId = element.player_2.user2_id;
                 return parameters.has(firstId) && parameters.has(secondId);
             });
-            console.log(filteredData, 'filtered data');
             filteredData.forEach((game) => {
                 let firstId = game.player_1.user1_id;
                 let secondId = game.player_2.user2_id;
-                let winnerId = _getWinner(game, firstId, secondId);
-                console.log(firstId, secondId, winnerId)
+                let winnerId = _getWinner(game);
+    //            console.log(firstId, secondId, winnerId)
 
                 if (!innerScore[firstId]) {
                     innerScore[firstId] = 0;
@@ -54,7 +53,6 @@ let sortModule = (function () {
             });
 
             let tempResult = Object.entries(innerScore).sort((a, b) => b[1] - a[1]);
-            console.log(tempResult, 'tempResult');
             if (!points.length) {
                 points = tempResult
             }
@@ -112,8 +110,6 @@ let sortModule = (function () {
                 }
             });
             let tempSetResult = Object.entries(innerSetScore).sort((a, b) => b[1] - a[1]);
-            // console.log(tempSetResult, 'tempSetREsult');
-
             for (let i = 0; i < tempSetResult.length; i++) {
                 let masterElement = tempSetResult[i][1];
                 let tempSetArr = tempSetResult.filter((element) => !(element[1] - masterElement));
@@ -144,17 +140,20 @@ let sortModule = (function () {
         // Sort by points function
         let _sortByPoints = function (data, parameters, setPoints) {
             let innerSetScore = {};
-            let index = 0;
             data.forEach((element) => {
                 let firstId = element.player_1.user1_id;
                 let secondId = element.player_2.user2_id;
                 if (parameters.has(firstId) && parameters.has(secondId)) {
-                    let firstResult = setPoints[index].reduce((acc, element) => {
+                    let setPointsIndex = null;
+                    setPoints.forEach((game, index) => {
+                        if (game[0].game_id === element.id) setPointsIndex = index;
+                    });
+                    let firstResult = setPoints[setPointsIndex].reduce((acc, element) => {
                             acc += element.player1_score;
                             return acc
                         }
                         , 0);
-                    let secondResult = setPoints[index].reduce((acc, element) => {
+                    let secondResult = setPoints[setPointsIndex].reduce((acc, element) => {
                             acc += element.player2_score;
                             return acc
                         }
@@ -167,7 +166,6 @@ let sortModule = (function () {
                         innerSetScore[secondId] = 0;
                         innerSetScore[secondId] += secondResult;
                     } else innerSetScore[secondId] += secondResult;
-                    index++
                 }
             });
             let tempSetResult = Object.entries(innerSetScore).sort((a, b) => b[1] - a[1]);
@@ -190,10 +188,8 @@ let sortModule = (function () {
         };
         // Main function
         let getResult = function (tournament, scores = 0) {
-            console.log(scores);
             _finalResult = [];
             points = [];
-            // let idBox = new Set();
             setPoints = scores;
             let checkSum = 0;
             let players = _getPlayersList(tournament);
