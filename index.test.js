@@ -94,9 +94,9 @@ let score5 = [JSON.parse('[{"game_id":196,"id":812,"player1_score":11,"player2_s
 let result5 = {
     errorCode: 0,
     result:[
-        {place: 1, player_id: "4", points: 0},
-        {place: 2, player_id: "2", points: 0},
-        {place: 3, player_id: "3", points: 0},
+        {place: 1, player_id: "2", points: 0},
+        {place: 2, player_id: "3", points: 0},
+        {place: 3, player_id: "4", points: 0},
         {place: 4, player_id: "5", points: 0}
     ]};
 

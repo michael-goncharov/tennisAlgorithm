@@ -6,11 +6,26 @@ let sortModule = (function () {
         // Find players list
         let _getPlayersList = function (response) {
             let players = new Set();
+            let allPlayers = new Set();
+            let zeroPlayers = new Set();
             response.forEach((game) => {
-                players.add(game.player_1.user1_id);
-                players.add(game.player_2.user2_id);
+                allPlayers.add(game.player_1.user1_id);
+                allPlayers.add(game.player_2.user2_id);
+                 if ((game.score[0][0] === '3') || (game.score[0][2] === '3'))
+                 {
+                     players.add(game.player_1.user1_id);
+                     players.add(game.player_2.user2_id);
+                 }
             });
-            return players;
+            allPlayers.forEach((player) => {
+                if (!players.has(player)) {zeroPlayers.add(player)}});
+ //           console.log(zeroPlayers, 'empty');
+
+            return ({
+                players: players,
+                zeroPlayers: zeroPlayers
+            })
+
         };
 
         let _getWinner = function (game) {
@@ -18,10 +33,10 @@ let sortModule = (function () {
             const pl2Score = game.score[0][2];
             if (pl1Score > pl2Score) return game.player_1.user1_id
                 else if (pl2Score > pl1Score) return game.player_2.user2_id;
-                    else return 0;
+                    else return null;
         };
         // Sort by games function
-        let _sortByGames = function (data, parameters, checkSum) {
+        let _sortByGames = function (data, parameters, zeroPlayersArray, checkSum) {
 
             let innerScore = {};
             let checkSum2 = 0;
@@ -30,11 +45,11 @@ let sortModule = (function () {
                 let secondId = element.player_2.user2_id;
                 return parameters.has(firstId) && parameters.has(secondId);
             });
+            console.log(filteredData, 'filtered')
             filteredData.forEach((game) => {
                 let firstId = game.player_1.user1_id;
                 let secondId = game.player_2.user2_id;
                 let winnerId = _getWinner(game);
-    //            console.log(firstId, secondId, winnerId)
 
                 if (!innerScore[firstId]) {
                     innerScore[firstId] = 0;
@@ -53,12 +68,15 @@ let sortModule = (function () {
             });
 
             let tempResult = Object.entries(innerScore).sort((a, b) => b[1] - a[1]);
+            console.log(tempResult, 'tempREsult');
             if (!points.length) {
                 points = tempResult
             }
             for (let i = 0; i < tempResult.length; i++) {
                 let masterElement = tempResult[i][1];
+                console.log(masterElement, 'master');
                 let tempArr = tempResult.filter((element) => !(element[1] - masterElement));
+                console.log(tempArr, 'tempArr')
                 if (tempArr.length === 1) {
                     _finalResult.push(tempArr[0]);
                     checkSum = 0;
@@ -70,6 +88,8 @@ let sortModule = (function () {
                     }
                     i += tempArr.length - 1;
                     if (checkSum === 1) {
+                        console.log('-=-=-=-=');
+                        console.log(par, 'par;')
                         _sortByGames(data, par)
                     } else {
                         _sortBySets(data, par, checkSum2);
@@ -77,14 +97,19 @@ let sortModule = (function () {
                     }
                 }
             }
-            if (_finalResult.length < 4) {
+
+            console.log(_finalResult.length, 'final length', parameters.size, '++++++++++++++++')
+            if (_finalResult.length + zeroPlayersArray < parameters.size) {
                 return []
             } else {
+                Array.prototype.push.apply(_finalResult, zeroPlayersArray);
+                console.log(_finalResult, 'final Result')
                 return _finalResult.map((element, index) => {
+
                     return {
                         'place': index + 1,
-                        'player_id': element[0],
-                        'points': points[index][1]
+                        'player_id': (index < points.length) ? element[0] : String(element),
+                        'points': (index < points.length) ? points[index][1] : 0
                     }
                 });
             }
@@ -188,12 +213,16 @@ let sortModule = (function () {
         };
         // Main function
         let getResult = function (tournament, scores = 0) {
+            console.log(tournament);
             _finalResult = [];
             points = [];
             setPoints = scores;
             let checkSum = 0;
-            let players = _getPlayersList(tournament);
-            let sortedArray = _sortByGames(tournament, players, checkSum);
+            let response = _getPlayersList(tournament);
+            let players = response.players;
+            let zeroPlayers = response.zeroPlayers;
+            let zeroPlayersArray = [...zeroPlayers];
+            let sortedArray = _sortByGames(tournament, players, zeroPlayersArray, checkSum);
             if (sortedArray.length) {
                 if (process.env.NODE_ENV !== "production") {
                     console.log({errorCode: 0, result: sortedArray}, "final result");
