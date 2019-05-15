@@ -19,8 +19,6 @@ let sortModule = (function () {
             });
             allPlayers.forEach((player) => {
                 if (!players.has(player)) {zeroPlayers.add(player)}});
- //           console.log(zeroPlayers, 'empty');
-
             return ({
                 players: players,
                 zeroPlayers: zeroPlayers
@@ -45,7 +43,6 @@ let sortModule = (function () {
                 let secondId = element.player_2.user2_id;
                 return parameters.has(firstId) && parameters.has(secondId);
             });
-            console.log(filteredData, 'filtered')
             filteredData.forEach((game) => {
                 let firstId = game.player_1.user1_id;
                 let secondId = game.player_2.user2_id;
@@ -68,15 +65,12 @@ let sortModule = (function () {
             });
 
             let tempResult = Object.entries(innerScore).sort((a, b) => b[1] - a[1]);
-            console.log(tempResult, 'tempREsult');
             if (!points.length) {
                 points = tempResult
             }
             for (let i = 0; i < tempResult.length; i++) {
                 let masterElement = tempResult[i][1];
-                console.log(masterElement, 'master');
                 let tempArr = tempResult.filter((element) => !(element[1] - masterElement));
-                console.log(tempArr, 'tempArr')
                 if (tempArr.length === 1) {
                     _finalResult.push(tempArr[0]);
                     checkSum = 0;
@@ -88,8 +82,6 @@ let sortModule = (function () {
                     }
                     i += tempArr.length - 1;
                     if (checkSum === 1) {
-                        console.log('-=-=-=-=');
-                        console.log(par, 'par;')
                         _sortByGames(data, par)
                     } else {
                         _sortBySets(data, par, checkSum2);
@@ -98,12 +90,10 @@ let sortModule = (function () {
                 }
             }
 
-            console.log(_finalResult.length, 'final length', parameters.size, '++++++++++++++++')
             if (_finalResult.length + zeroPlayersArray < parameters.size) {
                 return []
             } else {
                 Array.prototype.push.apply(_finalResult, zeroPlayersArray);
-                console.log(_finalResult, 'final Result')
                 return _finalResult.map((element, index) => {
 
                     return {
